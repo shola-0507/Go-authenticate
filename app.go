@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
@@ -16,8 +17,8 @@ type App struct {
 }
 
 // Initialize the go Application with Database setup
-func (app *App) Initialize(user, password, dbname, host, port string) {
-	db, err := gorm.Open("postgres", "host="+host+"port="+port+"user="+user+"dbname="+dbname+"password="+password)
+func (app *App) Initialize(user, password, dbname, host, port, sslmode string) {
+	db, err := gorm.Open("postgres", "host="+host+" port="+port+" user="+user+" dbname="+dbname+" password="+password+" sslmode="+sslmode)
 	defer db.Close()
 
 	if err != nil {
@@ -30,5 +31,11 @@ func (app *App) Initialize(user, password, dbname, host, port string) {
 
 // Run the go app
 func (app *App) Run(address string) {
-	log.Fatal(http.ListenAndServe(address, app.Router))
+	server := &http.Server{
+		Handler:      app.Router,
+		Addr:         address,
+		WriteTimeout: 15 * time.Second,
+		ReadTimeout:  15 * time.Second,
+	}
+	log.Fatal(server.ListenAndServe())
 }

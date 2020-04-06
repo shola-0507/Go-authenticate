@@ -14,4 +14,5 @@ type Staff struct {
 	JobTitle      string `json:"job_title"`
 	Password      string `json:"password"`
 	CompanyID     int    `json:"company_id"`
+	Salary        int    `json:"salary"`
 }

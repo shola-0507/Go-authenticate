@@ -5,6 +5,4 @@ import (
 )
 
 // LoginHandler Authentication for all users
-func LoginHandler(response http.ResponseWriter, request *http.Request) {
-
-}
+func LoginHandler(response http.ResponseWriter, request *http.Request) {}
