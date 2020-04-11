@@ -24,5 +24,4 @@ func main() {
 
 	address = "127.0.0.1:1227"
 	app.Run(address)
-	log.Println("Application running on " + address)
 }

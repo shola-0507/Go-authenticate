@@ -5,10 +5,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/Go-authenticate/config"
 	"github.com/gorilla/mux"
-	"github.com/jinzhu/gorm"
-
-	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
 // App application App interface
@@ -18,13 +16,11 @@ type App struct {
 
 // Initialize the go Application with Database setup
 func (app *App) Initialize(user, password, dbname, host, port, sslmode string) {
-	db, err := gorm.Open("postgres", "host="+host+" port="+port+" user="+user+" dbname="+dbname+" password="+password+" sslmode="+sslmode)
-	defer db.Close()
-
-	if err != nil {
+	if err := config.OpenDatabaseConnection(user, password, dbname, host, port, sslmode); err != nil {
 		log.Fatalf("Something went wrong connecting to the database %s", err)
 	}
 
+	defer config.CloseDatabaseConnection()
 	app.Router = mux.NewRouter()
 	app.initializeRoutes()
 }
@@ -37,5 +33,6 @@ func (app *App) Run(address string) {
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 	}
+	log.Println("Starting application on.... " + address)
 	log.Fatal(server.ListenAndServe())
 }

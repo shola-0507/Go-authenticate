@@ -8,9 +8,15 @@ import (
 )
 
 func (app *App) initializeRoutes() {
+	apiV1 := app.Router.PathPrefix("/api/v1").Subrouter()
 	app.Router.HandleFunc("/", func(response http.ResponseWriter, request *http.Request) {
+		resp := map[string]string{
+			"version": "1.0.0",
+			"status":  "running",
+		}
 		response.Header().Set("Content-Type", "Application/json")
-		json.NewEncoder(response).Encode(map[string]string{"Application Status": "Running"})
+		json.NewEncoder(response).Encode(resp)
 	}).Methods("GET")
-	app.Router.HandleFunc("api/v1/login", controllers.LoginHandler).Methods("GET")
+	apiV1.HandleFunc("/login", controllers.LoginHandler).Methods("POST")
+	apiV1.HandleFunc("/register", controllers.RegisterHandler).Methods("POST")
 }
