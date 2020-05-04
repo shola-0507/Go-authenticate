@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type claims struct {
@@ -34,4 +35,25 @@ func GenerateJWT(email, role string) (map[string]interface{}, error) {
 	response["token"] = tokenString
 	response["expiry"] = expirationTime
 	return response, nil
+}
+
+// EncryptPassword encrypt users password
+func EncryptPassword(password []byte) (string, error) {
+	hash, err := bcrypt.GenerateFromPassword(password, bcrypt.DefaultCost)
+	if err != nil {
+		return "", err
+	}
+
+	return string(hash), nil
+}
+
+// ComparePasswords Check to see that the users password matches the encrypted record
+func ComparePasswords(hashedPwd string, plainPwd []byte) bool {
+	byteHash := []byte(hashedPwd)
+	err := bcrypt.CompareHashAndPassword(byteHash, plainPwd)
+	if err != nil {
+		return false
+	}
+
+	return true
 }
