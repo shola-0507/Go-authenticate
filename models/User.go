@@ -1,33 +1,39 @@
 package models
 
 import (
-	"github.com/Go-authenticate/config"
 	"github.com/jinzhu/gorm"
 )
 
 // User struct defines the user model interface
 type User struct {
 	gorm.Model
-	FirstName     string `json:"first_name"`
-	LastName      string `json:"last_name"`
-	Email         string `json:"email"`
-	AccountNumber string `json:"account_number"`
-	JobTitle      string `json:"job_title"`
-	Password      string `json:"password"`
-	CompanyID     int    `json:"company_id"`
-	Salary        int    `json:"salary"`
-	Role          string `json:"role"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Email     string `json:"email"`
+	Password  string `json:"password"`
+	Role      string `json:"role"`
 }
 
-var db = config.GetDatabase()
+// TableName set table name for model
+func (User) TableName() string {
+	return "users"
+}
 
-// FindUser record in the DB
-func FindUser(email string) (User, error) {
-	var user User
-
-	if err := db.Where(&User{Email: email}).Find(&user).Error; err != nil {
-		return User{}, err
+// FindUserByEmail find user record by email
+func (user *User) FindUserByEmail(email string) (*User, error) {
+	var result User
+	if err := db.Find(&result, User{Email: email}).Error; err != nil {
+		return &result, err
 	}
 
-	return user, nil
+	return &result, nil
+}
+
+// Create add user record to the DB
+func (user *User) Create() error {
+	if err := db.Create(user).Error; err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -1,6 +1,8 @@
 package config
 
 import (
+	"time"
+
 	"github.com/jinzhu/gorm"
 
 	// postgres db plugin
@@ -8,26 +10,19 @@ import (
 )
 
 // DB representing database connection instance
-var DB *gorm.DB
+var db *gorm.DB
 
 // OpenDatabaseConnection a DB connection
-func OpenDatabaseConnection(username, password, dbName, dbHost, dbPort, sslmode string) error {
+func OpenDatabaseConnection(username, password, dbName, dbHost, dbPort, sslmode string) (*gorm.DB, error) {
 	var err error
-	DB, err = gorm.Open("mysql", username+":"+password+"@tcp("+dbHost+":"+dbPort+")/"+dbName+"?charset=utf8&parseTime=True&loc=Local")
+	db, err = gorm.Open("mysql", username+":"+password+"@tcp("+dbHost+":"+dbPort+")/"+dbName+"?charset=utf8&parseTime=True&loc=Local")
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
-}
-
-// CloseDatabaseConnection a DB connection
-func CloseDatabaseConnection() error {
-	return DB.Close()
-}
-
-// GetDatabase returns an instance of the database connection
-func GetDatabase() *gorm.DB {
-	return DB
+	db.DB().SetConnMaxLifetime(time.Minute * 5)
+	db.DB().SetMaxIdleConns(10)
+	db.DB().SetMaxOpenConns(10)
+	return db, nil
 }
