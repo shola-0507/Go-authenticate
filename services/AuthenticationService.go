@@ -10,7 +10,6 @@ import (
 // AuthenticateUser Handles user authentication
 func AuthenticateUser(email, password string) (interface{}, error) {
 	response := make(map[string]interface{})
-
 	user, err := new(models.User).FindUserByEmail(email)
 
 	if err != nil {
@@ -18,24 +17,30 @@ func AuthenticateUser(email, password string) (interface{}, error) {
 		return nil, errors.New("Email and Password mismatch")
 	}
 
-	hashedPwd, err := EncryptPassword([]byte(password))
-	if err != nil {
-		return nil, err
-	}
-
-	passwordMatches := ComparePasswords(hashedPwd, []byte(user.Password))
+	passwordMatches := ComparePasswords(user.Password, password)
 	if !passwordMatches {
 		return nil, errors.New("Email and Password mismatch")
 	}
 
-	token, err := GenerateJWT(email, user.Role)
+	jwtInfo, err := GenerateJWT(email, user.Role.Name)
 	if err != nil {
 		return response, err
 	}
 
+	// create user session
+	newSession := &models.Session{
+		Token:     jwtInfo["token"],
+		UserID:    int(user.ID),
+		ExpiredAt: jwtInfo["expiry"],
+	}
+
+	if err := newSession.Create(); err != nil {
+		return nil, errors.New("Something went wrong registering the user")
+	}
+
 	response["token_type"] = "Bearer"
-	response["jwt_token"] = token["token"]
-	response["expires_at"] = token["expiry"]
+	response["jwt_token"] = jwtInfo["token"]
+	response["expires_at"] = jwtInfo["expiry"]
 	return response, nil
 }
 
@@ -52,7 +57,7 @@ func RegisterUser(firstName, lastName, email, password string) (interface{}, err
 		LastName:  lastName,
 		Email:     email,
 		Password:  hashedPwd,
-		Role:      "user",
+		RoleID:    1,
 	}
 
 	if err := newUser.Create(); err != nil {

@@ -2,6 +2,7 @@ package services
 
 import (
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -15,15 +16,20 @@ type claims struct {
 }
 
 // GenerateJWT generate a new JWT for the user
-func GenerateJWT(email, role string) (map[string]interface{}, error) {
-	response := make(map[string]interface{})
+func GenerateJWT(email, role string) (map[string]string, error) {
+	response := make(map[string]string)
 	jwtKey := []byte(os.Getenv("APP_JWT_KEY"))
-	expirationTime := time.Now().Add(24 * time.Hour).Unix()
+	jwtExpiryTime, err := strconv.Atoi(os.Getenv("APP_JWT_EXPIRY"))
+	if err != nil {
+		return response, err
+	}
+
+	expirationTime := time.Now().Add(time.Duration(jwtExpiryTime) * time.Second)
 	claims := &claims{
 		Email: email,
 		Role:  role,
 		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: expirationTime,
+			ExpiresAt: expirationTime.Unix(),
 		},
 	}
 
@@ -33,7 +39,7 @@ func GenerateJWT(email, role string) (map[string]interface{}, error) {
 		return response, err
 	}
 	response["token"] = tokenString
-	response["expiry"] = expirationTime
+	response["expiry"] = expirationTime.UTC().String()
 	return response, nil
 }
 
@@ -48,9 +54,11 @@ func EncryptPassword(password []byte) (string, error) {
 }
 
 // ComparePasswords Check to see that the users password matches the encrypted record
-func ComparePasswords(hashedPwd string, plainPwd []byte) bool {
+func ComparePasswords(hashedPwd string, plainPwd string) bool {
 	byteHash := []byte(hashedPwd)
-	err := bcrypt.CompareHashAndPassword(byteHash, plainPwd)
+	bytePassword := []byte(plainPwd)
+
+	err := bcrypt.CompareHashAndPassword(byteHash, bytePassword)
 	if err != nil {
 		return false
 	}
