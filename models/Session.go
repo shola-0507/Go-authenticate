@@ -1,13 +1,17 @@
 package models
 
-import "github.com/jinzhu/gorm"
+import (
+	"time"
+
+	"github.com/jinzhu/gorm"
+)
 
 // Session interface to manage user sessions
 type Session struct {
 	gorm.Model
-	Token     string `json:"token"`
-	UserID    int    `json:"user_id"`
-	ExpiredAt string `json:"expired_at"`
+	Token     string    `json:"token"`
+	UserID    int       `json:"user_id"`
+	ExpiresAt time.Time `json:"expires_at"`
 }
 
 // TableName set table name for model
@@ -22,4 +26,16 @@ func (session *Session) Create() error {
 	}
 
 	return nil
+}
+
+// FindActiveSession find the most recently created session
+func (session *Session) FindActiveSession(userID int) (*Session, error) {
+	var result Session
+	currentTime := time.Now().Format(time.RFC3339)
+
+	if err := db.Where(&Session{UserID: userID}).Where("expires_at > ?", currentTime).Limit(1).Find(&result).Error; err != nil {
+		return &result, err
+	}
+
+	return &result, nil
 }

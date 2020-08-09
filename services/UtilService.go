@@ -24,12 +24,12 @@ func GenerateJWT(email, role string) (map[string]string, error) {
 		return response, err
 	}
 
-	expirationTime := time.Now().Add(time.Duration(jwtExpiryTime) * time.Second)
+	expiryDateTime := time.Now().Add(time.Duration(jwtExpiryTime) * time.Second)
 	claims := &claims{
 		Email: email,
 		Role:  role,
 		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: expirationTime.Unix(),
+			ExpiresAt: expiryDateTime.Unix(),
 		},
 	}
 
@@ -39,7 +39,8 @@ func GenerateJWT(email, role string) (map[string]string, error) {
 		return response, err
 	}
 	response["token"] = tokenString
-	response["expiry"] = expirationTime.UTC().String()
+	response["expires_at"] = expiryDateTime.Format(time.RFC3339)
+
 	return response, nil
 }
 

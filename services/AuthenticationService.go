@@ -3,6 +3,7 @@ package services
 import (
 	"errors"
 	"log"
+	"time"
 
 	"github.com/Go-authenticate/models"
 )
@@ -22,16 +23,30 @@ func AuthenticateUser(email, password string) (interface{}, error) {
 		return nil, errors.New("Email and Password mismatch")
 	}
 
+	// check if user has an unexpired token
+	session, err := new(models.Session).FindActiveSession(int(user.ID))
+	if *session != (models.Session{}) {
+		response["token_type"] = "Bearer"
+		response["jwt_token"] = session.Token
+		response["expires_at"] = session.ExpiresAt.Format(time.RFC3339)
+
+		return response, nil
+	}
+
 	jwtInfo, err := GenerateJWT(email, user.Role.Name)
 	if err != nil {
 		return response, err
 	}
 
-	// create user session
+	expiresAt, err := time.Parse(time.RFC3339, jwtInfo["expires_at"])
+	if err != nil {
+		return response, err
+	}
+
 	newSession := &models.Session{
 		Token:     jwtInfo["token"],
 		UserID:    int(user.ID),
-		ExpiredAt: jwtInfo["expiry"],
+		ExpiresAt: expiresAt,
 	}
 
 	if err := newSession.Create(); err != nil {
@@ -40,7 +55,7 @@ func AuthenticateUser(email, password string) (interface{}, error) {
 
 	response["token_type"] = "Bearer"
 	response["jwt_token"] = jwtInfo["token"]
-	response["expires_at"] = jwtInfo["expiry"]
+	response["expires_at"] = jwtInfo["expires_at"]
 	return response, nil
 }
 

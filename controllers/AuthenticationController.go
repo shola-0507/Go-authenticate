@@ -27,7 +27,6 @@ func LoginHandler(response http.ResponseWriter, request *http.Request) {
 
 	if body.Email == "" || body.Password == "" {
 		services.ErrorResponse(response, http.StatusBadRequest, "Email and Password are required")
-		return
 	}
 
 	resp, err := services.AuthenticateUser(body.Email, body.Password)
