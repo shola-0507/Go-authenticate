@@ -5,7 +5,7 @@ import (
 
 	"github.com/jinzhu/gorm"
 
-	// postgres db plugin
+	// mysql db plugin
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 )
 

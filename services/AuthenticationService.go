@@ -23,7 +23,6 @@ func AuthenticateUser(email, password string) (interface{}, error) {
 		return nil, errors.New("Email and Password mismatch")
 	}
 
-	// check if user has an unexpired token
 	session, err := new(models.Session).FindActiveSession(int(user.ID))
 	if *session != (models.Session{}) {
 		response["token_type"] = "Bearer"
