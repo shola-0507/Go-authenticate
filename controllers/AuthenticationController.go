@@ -28,6 +28,7 @@ func LoginHandler(response http.ResponseWriter, request *http.Request) {
 
 	if body.Email == "" || body.Password == "" {
 		services.ErrorResponse(response, http.StatusBadRequest, "Email and Password are required")
+		return
 	}
 
 	resp, err := services.AuthenticateUser(body.Email, body.Password)
@@ -38,7 +39,6 @@ func LoginHandler(response http.ResponseWriter, request *http.Request) {
 	}
 
 	services.SuccessResponse(response, "Authentication Successful", resp)
-	return
 }
 
 // RegisterHandler Registration authentication for users
@@ -55,5 +55,4 @@ func RegisterHandler(response http.ResponseWriter, request *http.Request) {
 	}
 
 	services.SuccessResponse(response, "Registration Successful", resp)
-	return
 }
