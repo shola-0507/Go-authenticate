@@ -6,12 +6,12 @@ import (
 )
 
 type err struct {
-	Status  bool   `json:"status"`
+	Status  string `json:"status"`
 	Message string `json:"message"`
 }
 
 type success struct {
-	Status  bool        `json:"status"`
+	Status  string      `json:"status"`
 	Message string      `json:"message"`
 	Data    interface{} `json:"data"`
 }
@@ -19,7 +19,7 @@ type success struct {
 // ErrorResponse method retuns an http error response
 func ErrorResponse(response http.ResponseWriter, status int, message string) {
 	data := &err{
-		Status:  false,
+		Status:  "failed",
 		Message: message,
 	}
 
@@ -32,7 +32,7 @@ func ErrorResponse(response http.ResponseWriter, status int, message string) {
 // SuccessResponse method retuns an http success response
 func SuccessResponse(response http.ResponseWriter, message string, payload interface{}) {
 	data := &success{
-		Status:  true,
+		Status:  "success",
 		Message: message,
 		Data:    payload,
 	}

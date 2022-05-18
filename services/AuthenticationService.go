@@ -59,27 +59,39 @@ func AuthenticateUser(email, password string) (interface{}, error) {
 }
 
 // RegisterUser Handles user registeration
-func RegisterUser(firstName, lastName, email, password string) (interface{}, error) {
-	response := make(map[string]interface{})
-	hashedPwd, err := EncryptPassword([]byte(password))
+func RegisterUser(firstName, lastName, email, phoneNumber, password string) (interface{}, error) {
+	hashedPassword, err := EncryptPassword([]byte(password))
 	if err != nil {
 		return nil, err
 	}
 
-	newUser := &models.User{
-		FirstName: firstName,
-		LastName:  lastName,
-		Email:     email,
-		Password:  hashedPwd,
-		RoleID:    1,
+	userInstance := &models.User{
+		FirstName:   firstName,
+		LastName:    lastName,
+		Email:       email,
+		PhoneNumber: phoneNumber,
+		Password:    hashedPassword,
+		RoleID:      1,
 	}
 
-	if err := newUser.Create(); err != nil {
+	user, err := new(models.User).FindUserByEmail(email)
+	if err != nil {
+		log.Printf("Something went wrong %s", err)
 		return nil, errors.New("Something went wrong registering the user")
 	}
 
-	response["first_name"] = newUser.FirstName
-	response["last_name"] = newUser.LastName
-	response["email"] = newUser.Email
+	if user != nil {
+		return nil, errors.New("This email address belongs to an existing user")
+	}
+
+	if err := userInstance.Create(); err != nil {
+		log.Printf("Something went wrong %s", err)
+		return nil, errors.New("Something went wrong registering the user")
+	}
+
+	response := make(map[string]interface{})
+	response["first_name"] = userInstance.FirstName
+	response["last_name"] = userInstance.LastName
+	response["email"] = userInstance.Email
 	return response, nil
 }

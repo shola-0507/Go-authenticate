@@ -39,7 +39,7 @@ func (app *App) Run(address string) {
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 	}
-	log.Println("Starting application on.... " + address)
+	log.Println("Application running on.... " + address)
 	log.Fatal(server.ListenAndServe())
 }
 

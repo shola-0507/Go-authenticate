@@ -13,11 +13,12 @@ type login struct {
 	Password string `json:"password"`
 }
 
-type register struct {
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	Email     string `json:"email"`
-	Password  string `json:"password"`
+type registeration struct {
+	FirstName   string `json:"first_name"`
+	LastName    string `json:"last_name"`
+	Email       string `json:"email"`
+	PhoneNumber string `json:"phone_number"`
+	Password    string `json:"password"`
 }
 
 // LoginHandler Login Authentication for users
@@ -42,11 +43,11 @@ func LoginHandler(response http.ResponseWriter, request *http.Request) {
 
 // RegisterHandler Registration authentication for users
 func RegisterHandler(response http.ResponseWriter, request *http.Request) {
-	var body register
+	var body registeration
 	json.NewDecoder(request.Body).Decode(&body)
 
 	// toDo: perform authentication checks
-	resp, err := services.RegisterUser(body.FirstName, body.LastName, body.Email, body.Password)
+	resp, err := services.RegisterUser(body.FirstName, body.LastName, body.Email, body.PhoneNumber, body.Password)
 	if err != nil {
 		log.Printf("Something went wrong %s", err)
 		services.ErrorResponse(response, http.StatusInternalServerError, err.Error())

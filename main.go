@@ -22,6 +22,8 @@ func main() {
 		os.Getenv("APP_DB_PORT"),
 		os.Getenv("APP_DB_SSLMODE"))
 
-	address = "127.0.0.1:1227"
+	hostAddress := os.Getenv("APP_HOST_ADDRESS")
+	portNumber := os.Getenv("APP_PORT")
+	address = hostAddress + ":" + portNumber
 	app.Run(address)
 }
